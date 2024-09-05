@@ -48,7 +48,7 @@ services:
       - postgres
 
 volumes:
-  habrdb-data:
+  poemsdb-data:
   pgadmin-data:
 
 networks:
