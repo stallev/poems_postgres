@@ -1,0 +1,35 @@
+services:
+  postgres-base:
+    container_name: postgres_container
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "poemsdb"
+      POSTGRES_USER: "poemsuser"
+      POSTGRES_PASSWORD: "4pgpwd4habr"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poemsuser -d poemsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+
+  backup-base:
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "poemsdb"
+      POSTGRES_USER: "poemsuser"
+      POSTGRES_PASSWORD: "4pgpwd4habr"
+    command: |
+      bash -c '
+      while true; do
+        PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h postgres -U $$POSTGRES_USER -d $$POSTGRES_DB -F c -f /backups/backup_$$(date +%Y%m%d_%H%M%S).dump
+        echo "Backup created at $$(date)"
+        sleep 86400
+      done
+      '
